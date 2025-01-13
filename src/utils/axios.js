@@ -1,4 +1,4 @@
 import axios from 'axios' 
-axios.defaults.baseURL = 'https://api.darxon-res.uz/api'
+axios.defaults.baseURL = 'https://dev.mondicafe.uz/api'
 
 export default axios

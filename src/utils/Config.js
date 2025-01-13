@@ -1,5 +1,5 @@
 const CONFIG = {
-    API_URL: 'https://api.darxon-res.uz/',
+    API_URL: 'https://dev.mondicafe.uz/',
   };
   
   export default CONFIG;
