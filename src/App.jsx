@@ -8,6 +8,10 @@ import AdminLayout from "./layouts/AdminLayout";
 import AdminCategory from "./Pages/AdminCategory";
 import AdminMenu from "./Pages/AdminMenu";
 import AdminBg from "./Pages/AdminBg";
+import AdminEmployee from "./Pages/AdminEmployee";
+import AdminEmployeeComments from "./Pages/AdminEmployeeComments";
+import AdminComment from "./Pages/AdminComment";
+>>>>>>> 8c709a86c9325a7d1b20399f59f1d2a20f52b510
 import Menu from "./Pages/Menu";
 import ProtectedRoute from "./Components/ProtectedRoute"; // Импорт компонента защиты маршрутов
 
@@ -27,6 +31,12 @@ function App() {
             <Route path="admin/category" element={<AdminCategory />} />
             <Route path="admin/menu" element={<AdminMenu />} />
             <Route path="admin/bg" element={<AdminBg />} />
+            <Route path="admin/employee" element={<AdminEmployee />} />
+            <Route
+              path="/admin/employee/:id"
+              element={<AdminEmployeeComments />}
+            />
+            <Route path="admin/comments" element={<AdminComment />} />
           </Route>
           <Route element={<MainLayout />}>
             <Route index element={<Home />} />
