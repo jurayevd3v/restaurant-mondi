@@ -11,7 +11,6 @@ import AdminBg from "./Pages/AdminBg";
 import AdminEmployee from "./Pages/AdminEmployee";
 import AdminEmployeeComments from "./Pages/AdminEmployeeComments";
 import AdminComment from "./Pages/AdminComment";
->>>>>>> 8c709a86c9325a7d1b20399f59f1d2a20f52b510
 import Menu from "./Pages/Menu";
 import ProtectedRoute from "./Components/ProtectedRoute"; // Импорт компонента защиты маршрутов
 
