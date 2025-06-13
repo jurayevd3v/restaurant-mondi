@@ -56,7 +56,7 @@ export default function AdminEmployeeComments() {
 
   useEffect(() => {
     fetchComments();
-  }, [id, filterType, filterValue]);
+  }, [id]);
 
   const totalPages = Math.ceil(comments.length / itemsPerPage);
   const displayedComments = comments.slice(

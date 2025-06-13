@@ -53,7 +53,7 @@ export default function AdminComments() {
 
   useEffect(() => {
     fetchComments();
-  }, [filterType, filterValue]);
+  }, []);
 
   const totalPages = Math.ceil(comments.length / itemsPerPage);
   const displayedComments = comments.slice(
@@ -166,11 +166,11 @@ export default function AdminComments() {
           <p className="text-xl font-bold">{stats.totalComments}</p>
         </div>
         <div className="bg-white shadow border border-[#0093b5] rounded p-4">
-          <p className="text-[#0093b5]">Reytinglar yig'indisi ⭐</p>
+          <p className="text-[#0093b5]">Reytinglar yig`indisi ⭐</p>
           <p className="text-xl font-bold">{stats.totalRating}</p>
         </div>
         <div className="bg-white shadow border border-[#0093b5] rounded p-4">
-          <p className="text-[#0093b5]">O'rtacha reyting ⭐</p>
+          <p className="text-[#0093b5]">O`rtacha reyting ⭐</p>
           <p className="text-xl font-bold">{stats.avgRating}</p>
         </div>
       </div>

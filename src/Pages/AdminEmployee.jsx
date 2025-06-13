@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import CONFIG from "../utils/Config";
+// import CONFIG from "../utils/Config";
 import ReactLoading from "react-loading";
 import { MdDelete, MdEdit } from "react-icons/md";
 import EmployeeCreate from "../Components/AdminEmployee/EmployeeCreate";
@@ -20,19 +20,40 @@ export default function AdminEmployee() {
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
+  const [filterType, setFilterType] = useState("all");
+  const [filterValue, setFilterValue] = useState("");
+
   const navigate = useNavigate();
 
   const fetchEmployees = async () => {
+    setLoading(true);
+
+    let url = "/employee";
+
     try {
-      const res = await axios.get(`/employee`);
-      setEmployees(res.data);
-    } catch (err) {
-      console.error("Error fetching employees:", err);
+      if (filterType === "day") {
+        url = `/employee/day/${filterValue}`; // example: 2025-06-13
+      } else if (filterType === "week") {
+        url = `/employee/week/${filterValue}`; // example: 2025-06-13
+      } else if (filterType === "month") {
+        url = `/employee/month/${filterValue}`; // example: 2025-06
+      } else if (filterType === "year") {
+        url = `/employee/year/${filterValue}`; // example: 2025
+      }
+
+      const res = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      setEmployees(res.data || []);
+    } catch (error) {
+      console.error("Xatolik:", error);
     } finally {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchEmployees();
@@ -49,10 +70,21 @@ export default function AdminEmployee() {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    fetchEmployees();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen w-full">
-        <ReactLoading type="spinningBubbles" color="#000" height={100} width={100} />
+        <ReactLoading
+          type="spinningBubbles"
+          color="#000"
+          height={100}
+          width={100}
+        />
       </div>
     );
   }
@@ -60,13 +92,81 @@ export default function AdminEmployee() {
   return (
     <div className="overflow-y-scroll w-full h-screen pb-20">
       <div className="w-full p-5 bg-white border-b border-[#0093b5] flex justify-between items-center">
-        <h1 className="text-2xl">Xodimlar</h1>
-        <button
-          onClick={() => setCreateModal(true)}
-          className="bg-[#0093b5] text-lg px-5 py-2 rounded-md text-white border-2 border-[#0093b5] hover:bg-transparent hover:text-[#0093b5] transition"
+        <div className="flex items-center gap-5">
+          <h1 className="text-2xl">Xodimlar</h1>
+          <button
+            onClick={() => setCreateModal(true)}
+            className="bg-[#0093b5] text px-5 py-2 rounded-md text-white border-2 border-[#0093b5] hover:bg-transparent hover:text-[#0093b5] transition"
+          >
+            Yaratish
+          </button>
+        </div>
+
+        <form
+          onSubmit={handleFilterSubmit}
+          className="flex items-center gap-4 justify-between"
         >
-          Yaratish
-        </button>
+          <select
+            value={filterType}
+            onChange={(e) => {
+              setFilterType(e.target.value);
+              setFilterValue(""); // Clear value when type changes
+            }}
+            className="border border-[#0093b5] rounded px-4 py-2.5 text-[#0093b5] w-full"
+          >
+            <option value="all">Hammasi</option>
+            <option value="day">Kun</option>
+            <option value="week">Hafta (kun asosida)</option>
+            <option value="month">Oy</option>
+            <option value="year">Yil</option>
+          </select>
+
+          {/* Dynamic input */}
+          {(filterType === "day" || filterType === "week") && (
+            <input
+              type="date"
+              value={filterValue}
+              onChange={(e) => setFilterValue(e.target.value)}
+              className="border rounded px-4 py-2"
+              required
+            />
+          )}
+          {filterType === "month" && (
+            <input
+              type="month"
+              value={filterValue}
+              onChange={(e) => setFilterValue(e.target.value)}
+              className="border rounded px-4 py-2"
+              required
+            />
+          )}
+          {filterType === "year" && (
+            <select
+              value={filterValue}
+              onChange={(e) => setFilterValue(e.target.value)}
+              className="border border-[#0093b5] rounded px-4 py-2.5"
+              required
+            >
+              <option value="">Yilni tanlang</option>
+              {Array.from({ length: 5 }, (_, i) => {
+                const currentYear = new Date().getFullYear();
+                const year = currentYear - 2 + i;
+                return (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                );
+              })}
+            </select>
+          )}
+
+          <button
+            type="submit"
+            className="bg-[#0093b5] text-white px-4 py-2 rounded hover:bg-[#007799]"
+          >
+            Qidirish
+          </button>
+        </form>
       </div>
 
       {employees.length > 0 ? (
@@ -89,7 +189,7 @@ export default function AdminEmployee() {
                     <td className="py-2 px-4">{employee.full_name}</td>
                     <td className="py-2 px-4">{employee.phone_number}</td>
                     <td className="py-2 px-4">{employee.role}</td>
-                    <td className="py-2 px-4">{employee.totalRating} ⭐</td>
+                    <td className="py-2 px-4">{employee.avgRating} ⭐</td>
                     <td className="py-2 px-4">
                       <div className="flex gap-3">
                         <button
@@ -114,7 +214,9 @@ export default function AdminEmployee() {
                     </td>
                     <td className="py-2 px-4">
                       <button
-                        onClick={() => navigate(`/admin/employee/${employee.id}`)}
+                        onClick={() =>
+                          navigate(`/admin/employee/${employee.id}`)
+                        }
                         className="bg-[#0093b5] text-white px-3 py-1 rounded hover:bg-[#007799]"
                       >
                         Izohlarni ko‘rish
@@ -160,9 +262,23 @@ export default function AdminEmployee() {
       )}
 
       {/* Modal components */}
-      <EmployeeCreate isOpen={createModal} onClose={() => setCreateModal(false)} refresh={fetchEmployees} />
-      <EmployeeEdit isOpen={editModal} onClose={() => setEditModal(false)} data={editData} refresh={fetchEmployees} />
-      <EmployeeDelete isOpen={deleteModal} onClose={() => setDeleteModal(false)} id={deleteId} refresh={fetchEmployees} />
+      <EmployeeCreate
+        isOpen={createModal}
+        onClose={() => setCreateModal(false)}
+        refresh={fetchEmployees}
+      />
+      <EmployeeEdit
+        isOpen={editModal}
+        onClose={() => setEditModal(false)}
+        data={editData}
+        refresh={fetchEmployees}
+      />
+      <EmployeeDelete
+        isOpen={deleteModal}
+        onClose={() => setDeleteModal(false)}
+        id={deleteId}
+        refresh={fetchEmployees}
+      />
     </div>
   );
 }
