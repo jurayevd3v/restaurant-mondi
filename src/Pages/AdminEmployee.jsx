@@ -26,7 +26,6 @@ export default function AdminEmployee() {
     try {
       const res = await axios.get(`/employee`);
       setEmployees(res.data);
-      console.log(res.data)
     } catch (err) {
       console.error("Error fetching employees:", err);
     } finally {
@@ -79,6 +78,7 @@ export default function AdminEmployee() {
                   <th className="py-2 px-4 text-left">Full Name</th>
                   <th className="py-2 px-4 text-left">Phone Number</th>
                   <th className="py-2 px-4 text-left">Role</th>
+                  <th className="py-2 px-4 text-left">Reyting</th>
                   <th className="py-2 px-4 text-left">Sozlamalar</th>
                   <th className="py-2 px-4 text-left">Izohlarni ko‘rish</th>
                 </tr>
@@ -89,6 +89,7 @@ export default function AdminEmployee() {
                     <td className="py-2 px-4">{employee.full_name}</td>
                     <td className="py-2 px-4">{employee.phone_number}</td>
                     <td className="py-2 px-4">{employee.role}</td>
+                    <td className="py-2 px-4">{employee.totalRating} ⭐</td>
                     <td className="py-2 px-4">
                       <div className="flex gap-3">
                         <button
