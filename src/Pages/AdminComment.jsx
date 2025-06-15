@@ -37,7 +37,6 @@ export default function AdminComments() {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-
       setComments(res.data.comments || []);
       setStats({
         totalComments: res.data.totalComments,
@@ -183,19 +182,18 @@ export default function AdminComments() {
           <div className="space-y-4 w-full">
             {displayedComments.map(
               ({ id, comment, createdAt, full_name, rating }) => (
-                <details key={id} className="border rounded p-4 w-full">
-                  <summary className="cursor-pointer font-semibold w-full">
+                <div key={id} className="border rounded p-4 w-full">
+                  <div className="font-semibold w-full">
                     {full_name} — Reyting: {rating} ⭐
-                  </summary>
+                  </div>
                   <p className="mt-2 w-full">{comment}</p>
                   <p className="mt-1 text-sm text-gray-500 w-full">
                     Yozilgan sana: {new Date(createdAt).toLocaleString()}
                   </p>
-                </details>
+                </div>
               )
             )}
           </div>
-
           {/* Pagination */}
           <div className="flex justify-center items-center space-x-4 mt-8">
             <button

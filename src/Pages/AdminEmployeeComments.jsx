@@ -7,6 +7,7 @@ export default function AdminEmployeeComments() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [comments, setComments] = useState([]);
+  const [full_name, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
     totalComments: 0,
@@ -42,6 +43,12 @@ export default function AdminEmployeeComments() {
       });
 
       setComments(res.data.comments || []);
+      const employee = await axios.get(`employee/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      setFullName(employee.data.full_name);
       setStats({
         totalComments: res.data.totalComments,
         totalRating: res.data.totalRating,
@@ -93,7 +100,7 @@ export default function AdminEmployeeComments() {
     <div className="px-6 w-full">
       <div className="w-full p-5 bg-white border-b border-[#0093b5] flex justify-between items-center mb-5">
         <div className="flex items-center gap-5">
-          <h1 className="text-2xl">Xodim izohlari</h1>
+          <h1 className="text-2xl">{full_name}</h1>
           <button
             onClick={() => navigate(-1)}
             className="bg-[#0093b5] p-2 px-5 rounded-md text-white border-2 border-[#0093b5] hover:bg-transparent hover:text-[#0093b5] transition"
@@ -194,19 +201,18 @@ export default function AdminEmployeeComments() {
           <div className="space-y-4 w-full">
             {displayedComments.map(
               ({ id, comment, createdAt, full_name, rating }) => (
-                <details key={id} className="border rounded p-4 w-full">
-                  <summary className="cursor-pointer font-semibold w-full">
+                <div key={id} className="border rounded p-4 w-full">
+                  <div className="font-semibold w-full">
                     {full_name} — Reyting: {rating} ⭐
-                  </summary>
+                  </div>
                   <p className="mt-2 w-full">{comment}</p>
                   <p className="mt-1 text-sm text-gray-500 w-full">
                     Yozilgan sana: {new Date(createdAt).toLocaleString()}
                   </p>
-                </details>
+                </div>
               )
             )}
           </div>
-
           {/* Pagination */}
           <div className="flex justify-center items-center space-x-4 mt-8">
             <button
