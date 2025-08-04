@@ -24,11 +24,11 @@ export default function Home() {
 
     return (
         <div className="pb-[50px] relative min-h-[1000px] h-[100%] bg-cover bg-center bg-no-repeat" style={backgroundStyle}>
-            <div className='absolute  h-[100%] z-10 inset-0 bg-[#0000008e]'>
+            <div className='absolute  h-[100%] z-10 inset-0 bg-[#00000033]'>
 
             </div>
             <div className="Header relative z-20 flex items-center justify-center bg-white p-[20px] rounded-b-[30px]">
-                <img src={logo} alt="Logo" />
+                <img className='sm:w-[300px] w-[100px]' src={logo} alt="Logo" />
             </div>
             <div className='Container relative z-20'>
                 <CategoryCard />

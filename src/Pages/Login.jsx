@@ -45,11 +45,10 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0093b5]">
+    <div className="min-h-screen flex items-center justify-center bg-[#0093B5]">
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg text-center">
-        <img className='block mx-auto' src={logo} alt="foto" />
+        <img className='block mb-[30px] mx-auto' src={logo} alt="foto" />
 
-        <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
 
         <div className="space-y-4">
           <Input
@@ -59,7 +58,7 @@ const Login = () => {
             color="gray"  // Changed to gray for a neutral look
             type="text"
             required
-            className="border-black"  // Black border color
+            className="border-[#0093B5]"  // Black border color
           />
           <Input
             label="Password"
@@ -68,13 +67,13 @@ const Login = () => {
             color="gray"  // Changed to gray for a neutral look
             type="password"
             required
-            className="border-black"  // Black border color
+            className="border-[#0093B5]"  // Black border color
           />
           <Button
             fullWidth
             color="gray"  // Changed to gray for a neutral button
             onClick={Login}
-            className="bg-black text-white hover:bg-gray-800"
+            className="bg-[#0093B5] text-white hover:bg-gray-800"
           >
             Login
           </Button>

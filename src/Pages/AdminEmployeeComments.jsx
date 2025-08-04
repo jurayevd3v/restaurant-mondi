@@ -1,7 +1,17 @@
+import {
+  Card,
+  CardBody,
+  Typography,
+  Select,
+  Option,
+  Input,
+  Button,
+} from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ReactLoading from "react-loading";
 import { useParams, useNavigate } from "react-router-dom";
+import CommentDelete from "../Components/Comment/CommnetDelete";
 
 export default function AdminEmployeeComments() {
   const { id } = useParams();
@@ -16,38 +26,29 @@ export default function AdminEmployeeComments() {
   });
 
   const [filterType, setFilterType] = useState("all");
-  const [filterValue, setFilterValue] = useState(""); // always string
+  const [filterValue, setFilterValue] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
   const fetchComments = async () => {
     setLoading(true);
-
     let url = `/comments/employee/${id}`;
-
     try {
-      if (filterType === "day") {
-        url = `/comments/employee-day/${id}/${filterValue}`; // example: 2025-06-13
-      } else if (filterType === "week") {
-        url = `/comments/employee-week/${id}/${filterValue}`; // example: 2025-06-13
-      } else if (filterType === "month") {
-        url = `/comments/employee-month/${id}/${filterValue}`; // example: 2025-06
-      } else if (filterType === "year") {
-        url = `/comments/employee-year/${id}/${filterValue}`; // example: 2025
-      }
+      if (filterType === "day") url = `/comments/employee-day/${id}/${filterValue}`;
+      else if (filterType === "week") url = `/comments/employee-week/${id}/${filterValue}`;
+      else if (filterType === "month") url = `/comments/employee-month/${id}/${filterValue}`;
+      else if (filterType === "year") url = `/comments/employee-year/${id}/${filterValue}`;
 
-      const res = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const [res, employee] = await Promise.all([
+        axios.get(url, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }),
+        axios.get(`employee/${id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }),
+      ]);
 
       setComments(res.data.comments || []);
-      const employee = await axios.get(`employee/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
       setFullName(employee.data.full_name);
       setStats({
         totalComments: res.data.totalComments,
@@ -72,9 +73,7 @@ export default function AdminEmployeeComments() {
   );
 
   const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
   const handleFilterSubmit = (e) => {
@@ -86,162 +85,159 @@ export default function AdminEmployeeComments() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen w-full">
-        <ReactLoading
-          type="spinningBubbles"
-          color="#000"
-          height={100}
-          width={100}
-        />
+        <ReactLoading type="spinningBubbles" color="#026634" height={100} width={100} />
       </div>
     );
   }
 
   return (
-    <div className="px-6 w-full">
-      <div className="w-full p-5 bg-white border-b border-[#0093b5] flex justify-between items-center mb-5">
-        <div className="flex items-center gap-5">
-          <h1 className="text-2xl">{full_name}</h1>
-          <button
-            onClick={() => navigate(-1)}
-            className="bg-[#0093b5] p-2 px-5 rounded-md text-white border-2 border-[#0093b5] hover:bg-transparent hover:text-[#0093b5] transition"
-          >
-            Orqaga qaytish
-          </button>
-        </div>
+    <div className="p-3 mx-auto w-full space-y-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <Typography variant="h4" className="text-[#026634] font-bold">
+          {full_name} — Izohlar
+        </Typography>
+        <Button onClick={() => navigate(-1)} className="bg-[#026634] hover:bg-[#259c61]">
+          Orqaga qaytish
+        </Button>
+      </div>
 
-        {/* Filter form */}
-        <form
-          onSubmit={handleFilterSubmit}
-          className="flex items-center gap-4 justify-between"
-        >
-          <select
+      {/* Filter */}
+      <Card className="shadow-lg p-6">
+        <Typography variant="lead" className="mb-4 text-[#026634] font-semibold">
+          Filtr bo'yicha izlash
+        </Typography>
+        <form onSubmit={handleFilterSubmit} className="flex flex-wrap gap-4">
+          <Select
+            label="Filter turi"
             value={filterType}
-            onChange={(e) => {
-              setFilterType(e.target.value);
-              setFilterValue(""); // Clear value when type changes
+            onChange={(val) => {
+              setFilterType(val);
+              setFilterValue("");
             }}
-            className="border border-[#0093b5] rounded px-4 py-2.5 text-[#0093b5] w-full"
+            className="min-w-[150px]"
           >
-            <option value="all">Hammasi</option>
-            <option value="day">Kun</option>
-            <option value="week">Hafta (kun asosida)</option>
-            <option value="month">Oy</option>
-            <option value="year">Yil</option>
-          </select>
+            <Option value="all">Hammasi</Option>
+            <Option value="day">Kun</Option>
+            <Option value="week">Hafta</Option>
+            <Option value="month">Oy</Option>
+            <Option value="year">Yil</Option>
+          </Select>
 
-          {/* Dynamic input */}
           {(filterType === "day" || filterType === "week") && (
-            <input
+            <Input
               type="date"
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
-              className="border rounded px-4 py-2"
+              label="Sanani tanlang"
               required
+              className="min-w-[180px]"
             />
           )}
           {filterType === "month" && (
-            <input
+            <Input
               type="month"
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
-              className="border rounded px-4 py-2"
+              label="Oyni tanlang"
               required
+              className="min-w-[180px]"
             />
           )}
           {filterType === "year" && (
-            <select
+            <Select
+              label="Yilni tanlang"
               value={filterValue}
-              onChange={(e) => setFilterValue(e.target.value)}
-              className="border border-[#0093b5] rounded px-4 py-2.5"
+              onChange={(val) => setFilterValue(val)}
               required
+              className="min-w-[150px]"
             >
-              <option value="">Yilni tanlang</option>
               {Array.from({ length: 5 }, (_, i) => {
-                const currentYear = new Date().getFullYear();
-                const year = currentYear - 2 + i;
-                return (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                );
+                const year = new Date().getFullYear() - 2 + i;
+                return <Option key={year} value={year}>{year}</Option>;
               })}
-            </select>
+            </Select>
           )}
 
-          <button
-            type="submit"
-            className="bg-[#0093b5] text-white px-4 py-2 rounded hover:bg-[#007799]"
-          >
+          <Button type="submit" className="bg-[#026634] px-6 py-2">
             Qidirish
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
 
-      {/* Statistikalar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white shadow border border-[#0093b5] rounded p-4">
-          <p className="text-[#0093b5]">Jami izohlar 💬</p>
-          <p className="text-xl font-bold">{stats.totalComments}</p>
-        </div>
-        <div className="bg-white shadow border border-[#0093b5] rounded p-4">
-          <p className="text-[#0093b5]">Reytinglar yig'indisi ⭐</p>
-          <p className="text-xl font-bold">{stats.totalRating}</p>
-        </div>
-        <div className="bg-white shadow border border-[#0093b5] rounded p-4">
-          <p className="text-[#0093b5]">O'rtacha reyting ⭐</p>
-          <p className="text-xl font-bold">{stats.avgRating}</p>
-        </div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <Card className="shadow-lg border border-[#026634]">
+          <CardBody>
+            <Typography className="text-[#026634] font-medium">
+              Jami izohlar 💬
+            </Typography>
+            <Typography variant="h4">{stats.totalComments}</Typography>
+          </CardBody>
+        </Card>
+        <Card className="shadow-lg border border-[#026634]">
+          <CardBody>
+            <Typography className="text-[#026634] font-medium">
+              Reytinglar yig'indisi ⭐
+            </Typography>
+            <Typography variant="h4">{stats.totalRating}</Typography>
+          </CardBody>
+        </Card>
+        <Card className="shadow-lg border border-[#026634]">
+          <CardBody>
+            <Typography className="text-[#026634] font-medium">
+              O'rtacha reyting ⭐
+            </Typography>
+            <Typography variant="h4">{stats.avgRating}</Typography>
+          </CardBody>
+        </Card>
       </div>
 
       {/* Comments */}
-      {displayedComments.length === 0 ? (
-        <p>Izohlar topilmadi</p>
-      ) : (
-        <>
-          <div className="space-y-4 w-full">
-            {displayedComments.map(
-              ({ id, comment, createdAt, full_name, rating }) => (
-                <div key={id} className="border rounded p-4 w-full">
-                  <div className="font-semibold w-full">
-                    {full_name} — Reyting: {rating} ⭐
-                  </div>
-                  <p className="mt-2 w-full">{comment}</p>
-                  <p className="mt-1 text-sm text-gray-500 w-full">
-                    Yozilgan sana: {new Date(createdAt).toLocaleString()}
-                  </p>
-                </div>
-              )
-            )}
-          </div>
-          {/* Pagination */}
-          <div className="flex justify-center items-center space-x-4 mt-8">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`px-4 py-2 rounded ${
-                currentPage === 1
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-[#0093b5] text-white hover:bg-[#007799]"
-              }`}
-            >
-              &lt;
-            </button>
-            <span className="text-lg">
-              {currentPage} / {totalPages}
-            </span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={`px-4 py-2 rounded ${
-                currentPage === totalPages
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-[#0093b5] text-white hover:bg-[#007799]"
-              }`}
-            >
-              &gt;
-            </button>
-          </div>
-        </>
+      <div className="space-y-4">
+        {displayedComments.length === 0 ? (
+          <Card className="p-6 text-center text-gray-500">Izohlar topilmadi</Card>
+        ) : (
+          displayedComments.map(({ id, comment, createdAt, full_name, rating }) => (
+            <Card key={id} className="shadow-md border border-gray-200">
+              <CardBody>
+                <Typography className="text-[#026634] font-semibold">
+                  {full_name} — Reyting: {rating} ⭐
+                </Typography>
+                <Typography className="text-gray-800 mt-2">{comment}</Typography>
+                <Typography className="text-sm text-gray-500 mt-2">
+                  Sana: {new Date(createdAt).toLocaleString()}
+                </Typography>
+                <CommentDelete id={id} refresh={fetchComments} />
+              </CardBody>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <Button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            variant="outlined"
+            color="green"
+          >
+            &lt;
+          </Button>
+          <Typography variant="h6" color="green">
+            {currentPage} / {totalPages}
+          </Typography>
+          <Button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            variant="outlined"
+            color="green"
+          >
+            &gt;
+          </Button>
+        </div>
       )}
     </div>
   );

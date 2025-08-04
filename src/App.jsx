@@ -28,7 +28,7 @@ function App() {
             }
           >
             <Route path="admin/category" element={<AdminCategory />} />
-            <Route path="admin/menu" element={<AdminMenu />} />
+            <Route path="admin/menu/:ID" element={<AdminMenu />} />
             <Route path="admin/bg" element={<AdminBg />} />
             <Route path="admin/employee" element={<AdminEmployee />} />
             <Route

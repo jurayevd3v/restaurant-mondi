@@ -1,87 +1,67 @@
 import React from "react";
-import logo from "../img/logo.png";
+import { Card, List, ListItem, ListItemPrefix, Typography } from "@material-tailwind/react";
 import { NavLink, useLocation } from "react-router-dom";
+import {
+  PresentationChartBarIcon,
+  CubeTransparentIcon,
+  PhotoIcon,
+  UserCircleIcon,
+  ChatBubbleBottomCenterTextIcon,
+} from "@heroicons/react/24/outline";
+import logo from "../img/logo.png";
 
-const Sidebar = () => {
+export default function Sidebar() {
   const location = useLocation();
 
-  const Category = location.pathname === "/admin/category";
-  const Menu = location.pathname === "/admin/menu";
-  const Bg = location.pathname === "/admin/bg";
-  const Employee = location.pathname === "/admin/employee";
-  const Comment = location.pathname === "/admin/comments";
+  const links = [
+    { to: "/admin/category", label: "Turkum", icon: <CubeTransparentIcon className="h-5 w-5" /> },
+    { to: "/admin/bg", label: "Fon", icon: <PhotoIcon className="h-5 w-5" /> },
+    { to: "/admin/employee", label: "Xodimlar", icon: <UserCircleIcon className="h-5 w-5" /> },
+    { to: "/admin/comments", label: "Izohlar", icon: <ChatBubbleBottomCenterTextIcon className="h-5 w-5" /> },
+  ];
 
   return (
-    <div className="relative flex h-screen border-r-[2px] border-[#0093b5] w-full max-w-[20rem] flex-col bg-white bg-clip-border p-4 text-gray-700 shadow-xl shadow-blue-gray-900/5">
-      <div className="p-4 mb-2">
-        <img src={logo} alt="logo" />
+    <Card
+      className="
+     h-[97%] w-[300px] shadow-2xl bg-white fixed mt-[10px] ml-[10px] p-[10px] rounded-[10px]
+      "
+    >
+      {/* Logo Section */}
+      <div className="mb-6 flex justify-center border-b border-gray-300/30 pb-6 transition-all duration-300 hover:scale-105">
+        <img src={logo} alt="Logo" className="w-36 mt-[20px] h-auto object-contain opacity-90" />
       </div>
-      <div className="w-full bg-white h-[1px]"></div>
-      <nav className="flex min-w-[240px] flex-col gap-1 p-2 font-sans text-base font-normal text-black text-[22px]">
-        <NavLink to="/admin/menu">
-          <div
-            role="button"
-            className={`flex items-center w-full p-3 rounded-lg transition-all hover:bg-blue-50 ${
-              Menu ? "bg-blue-100" : ""
-            }`}
-          >
-            <div className="grid mr-4 place-items-center">
-              🍽️
-            </div>
-            Menu
-          </div>
-        </NavLink>
 
-        <NavLink to="/admin/category">
-          <div
-            role="button"
-            className={`flex items-center w-full p-3 rounded-lg transition-all hover:bg-blue-50 ${
-              Category ? "bg-blue-100" : ""
-            }`}
-          >
-            <div className="grid mr-4 place-items-center">📦</div>
-            Turkum
-          </div>
-        </NavLink>
+      {/* Navigation Links */}
+      <List>
+        {links.map(({ to, label, icon }) => {
+          const isActive = location.pathname === to;
 
-        <NavLink to="/admin/bg">
-          <div
-            role="button"
-            className={`flex items-center w-full p-3 rounded-lg transition-all hover:bg-blue-50 ${
-              Bg ? "bg-blue-100" : ""
-            }`}
-          >
-            <div className="grid mr-4 place-items-center">🖼️</div>
-            Fon
-          </div>
-        </NavLink>
-
-        <NavLink to="/admin/employee">
-          <div
-            role="button"
-            className={`flex items-center w-full p-3 rounded-lg transition-all hover:bg-blue-50 ${
-              Employee ? "bg-blue-100" : ""
-            }`}
-          >
-            <div className="grid mr-4 place-items-center">👤</div>
-            Xodimlar
-          </div>
-        </NavLink>
-
-        <NavLink to="/admin/comments">
-          <div
-            role="button"
-            className={`flex items-center w-full p-3 rounded-lg transition-all hover:bg-blue-50 ${
-              Comment ? "bg-blue-100" : ""
-            }`}
-          >
-            <div className="grid mr-4 place-items-center">💬</div>
-            Izohlar
-          </div>
-        </NavLink>
-      </nav>
-    </div>
+          return (
+            <NavLink to={to} key={to} end>
+              <ListItem
+                className={`group flex items-center gap-3 rounded-lg px-4 py-3 mb-2 transition-all duration-200 
+                  ${isActive
+                    ? "bg-white/60 text-black shadow-md backdrop-blur-sm font-medium"
+                    : "text-gray-800 hover:bg-white/50 hover:text-gray-900"}`}
+              >
+                <ListItemPrefix
+                  className={`transition-transform duration-200 group-hover:scale-110 
+                    ${isActive ? "text-black" : "text-gray-700"}`}
+                >
+                  {icon}
+                </ListItemPrefix>
+                <Typography
+                  variant="small"
+                  className={`font-semibold tracking-wide transition-colors duration-200 
+                    ${isActive ? "text-black" : "text-gray-800"}`}
+                >
+                  {label}
+                </Typography>
+              </ListItem>
+            </NavLink>
+          );
+        })}
+      </List>
+    </Card>
   );
-};
-
-export default Sidebar;
+}

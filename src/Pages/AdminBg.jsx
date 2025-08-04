@@ -1,17 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import CONFIG from '../utils/Config';
-import ReactLoading from 'react-loading';
 import Swal from 'sweetalert2';
+import {
+    Typography,
+    Card,
+    CardBody,
+    Button,
+    Spinner
+} from '@material-tailwind/react';
 
 export default function AdminBg() {
     const [loading, setLoading] = useState(true);
-    const [imageUrl, setImageUrl] = useState(''); // Store the image URL for preview
-    const [image, setImage] = useState(null); // Store the selected image
+    const [imageUrl, setImageUrl] = useState('');
+    const [image, setImage] = useState(null);
+    const fileInputRef = useRef(null);
     const navigate = useNavigate();
 
-    // Fetch background image data on component mount
     const getBg = async () => {
         try {
             const response = await axios.get('/background', {
@@ -19,42 +25,38 @@ export default function AdminBg() {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
-            setImageUrl(CONFIG.API_URL + response?.data[0]?.image); // Set the image URL for preview
+            setImageUrl(CONFIG.API_URL + response?.data[0]?.image);
         } catch (error) {
-            if (error.response && error.response.status === 401) {
+            if (error.response?.status === 401) {
                 localStorage.removeItem('token');
-                navigate('login');
+                navigate('/login');
             }
         } finally {
             setLoading(false);
         }
     };
 
-    // Handle image selection and trigger POST request
     const handleImageChange = async (e) => {
         const selectedImage = e.target.files[0];
         if (selectedImage) {
             setImage(selectedImage);
             const reader = new FileReader();
             reader.onloadend = async () => {
-                setImageUrl(reader.result); // Set the image preview after selection
+                setImageUrl(reader.result);
 
-                // Create form data and append the selected image
                 const formData = new FormData();
                 formData.append('image', selectedImage);
 
-                // Perform POST request to upload the image
                 try {
                     await axios.post('/background', formData, {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem('token')}`,
-                            'Content-Type': 'multipart/form-data', // Set content type for image upload
+                            'Content-Type': 'multipart/form-data',
                         },
                     });
 
-                    // Display success message
                     Swal.fire({
-                        title: 'Image Uploaded!',
+                        title: 'Muvaffaqiyatli yuklandi!',
                         icon: 'success',
                         position: 'top-end',
                         timer: 3000,
@@ -63,12 +65,12 @@ export default function AdminBg() {
                         toast: true,
                         showConfirmButton: false,
                     });
+
                     getBg();
                 } catch (error) {
-                    // Handle errors
                     Swal.fire({
-                        title: 'Error!',
-                        text: error.response?.data?.message || 'Error uploading image',
+                        title: 'Xatolik!',
+                        text: error.response?.data?.message || 'Xatolik yuz berdi',
                         icon: 'error',
                         position: 'top-end',
                         timer: 3000,
@@ -77,9 +79,10 @@ export default function AdminBg() {
                         toast: true,
                         showConfirmButton: false,
                     });
-                    if (error.response && error.response.status === 401) {
+
+                    if (error.response?.status === 401) {
                         localStorage.removeItem('token');
-                        navigate('/login')
+                        navigate('/login');
                     }
                 }
             };
@@ -88,47 +91,52 @@ export default function AdminBg() {
     };
 
     useEffect(() => {
-        getBg(); // Fetch the background on component mount
+        getBg();
     }, []);
 
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen w-full">
-                <ReactLoading type="spinningBubbles" color="#000" height={100} width={100} />
+                <Spinner className="h-12 w-12 text-green-700" />
             </div>
         );
     }
 
     return (
-        <div className="overflow-y-scroll w-full h-screen pb-20">
-            <div className="w-full p-5 bg-[#    ]">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-5">
-                        <h1 className="text-2xl">Fon</h1>
-                    </div>
-                </div>
-            </div>
-            <div className="w-full p-5">
-                {imageUrl && (
-                    <div className="flex items-center justify-center mb-4">
+        <div className="min-h-screen p-3">
+            <Card className=" mx-auto">
+                <CardBody>
+                    <Typography variant="h4" color="blue-gray" className="mb-4">
+                        Fon rasmini o‘zgartirish
+                    </Typography>
+
+                    <div className="flex flex-col gap-6">
+                        <Button
+                            variant="filled"
+                            className="w-full bg-[#0093B5] hover:bg-[#007A99] text-white"
+                            onClick={() => fileInputRef.current.click()}
+                        >
+                            Rasmni tanlash
+                        </Button>
                         <input
                             type="file"
-                            id="photoInput"
-                            className="w-full p-3 mt-2 border border-gray-300 rounded-lg cursor-pointer bg-[#0093b5] text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            onChange={handleImageChange} // Trigger the POST request after selecting an image
+                            ref={fileInputRef}
+                            className="hidden"
+                            onChange={handleImageChange}
                         />
+
+                        {imageUrl && (
+                            <div className="flex justify-center">
+                                <img
+                                    src={imageUrl}
+                                    alt="Fon rasmi"
+                                    className="rounded-lg shadow-md max-h-[500px] object-contain"
+                                />
+                            </div>
+                        )}
                     </div>
-                )}
-                {imageUrl && (
-                    <div className="relative flex items-center justify-center">
-                        <img
-                            src={imageUrl}  // Display the fetched or selected background image
-                            alt="Background"
-                            className="w-full max-w-[800px] h-auto rounded-md"
-                        />
-                    </div>
-                )}
-            </div>
+                </CardBody>
+            </Card>
         </div>
     );
 }

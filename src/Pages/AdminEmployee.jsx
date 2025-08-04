@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-// import CONFIG from "../utils/Config";
 import ReactLoading from "react-loading";
 import { MdDelete, MdEdit } from "react-icons/md";
 import EmployeeCreate from "../Components/AdminEmployee/EmployeeCreate";
 import EmployeeDelete from "../Components/AdminEmployee/EmployeeDelete";
 import EmployeeEdit from "../Components/AdminEmployee/EmployeeEdit";
 import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Typography,
+  Button,
+  Select,
+  Option,
+  Input,
+} from "@material-tailwind/react";
 
 export default function AdminEmployee() {
   const [loading, setLoading] = useState(true);
@@ -31,15 +40,10 @@ export default function AdminEmployee() {
     let url = "/employee";
 
     try {
-      if (filterType === "day") {
-        url = `/employee/day/${filterValue}`; // example: 2025-06-13
-      } else if (filterType === "week") {
-        url = `/employee/week/${filterValue}`; // example: 2025-06-13
-      } else if (filterType === "month") {
-        url = `/employee/month/${filterValue}`; // example: 2025-06
-      } else if (filterType === "year") {
-        url = `/employee/year/${filterValue}`; // example: 2025
-      }
+      if (filterType === "day") url = `/employee/day/${filterValue}`;
+      else if (filterType === "week") url = `/employee/week/${filterValue}`;
+      else if (filterType === "month") url = `/employee/month/${filterValue}`;
+      else if (filterType === "year") url = `/employee/year/${filterValue}`;
 
       const res = await axios.get(url, {
         headers: {
@@ -59,7 +63,6 @@ export default function AdminEmployee() {
     fetchEmployees();
   }, []);
 
-  // Pagination
   const totalPages = Math.ceil(employees.length / itemsPerPage);
   const displayedEmployees = employees.slice(
     (currentPage - 1) * itemsPerPage,
@@ -79,206 +82,111 @@ export default function AdminEmployee() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen w-full">
-        <ReactLoading
-          type="spinningBubbles"
-          color="#000"
-          height={100}
-          width={100}
-        />
+        <ReactLoading type="spinningBubbles" color="#026634" height={100} width={100} />
       </div>
     );
   }
 
   return (
-    <div className="overflow-y-scroll w-full h-screen pb-20">
-      <div className="w-full p-5 bg-white border-b border-[#0093b5] flex justify-between items-center">
-        <div className="flex items-center gap-5">
-          <h1 className="text-2xl">Xodimlar</h1>
-          <button
-            onClick={() => setCreateModal(true)}
-            className="bg-[#0093b5] text px-5 py-2 rounded-md text-white border-2 border-[#0093b5] hover:bg-transparent hover:text-[#0093b5] transition"
-          >
-            Yaratish
-          </button>
-        </div>
+    <div className="p-3 min-h-screen ">
+      <Card className="shadow-lg">
+        <CardHeader floated={false} shadow={false} className="">
+          <div className="flex justify-between items-center p-4">
+            <Typography variant="h4">Xodimlar</Typography>
 
-        <form
-          onSubmit={handleFilterSubmit}
-          className="flex items-center gap-4 justify-between"
-        >
-          <select
-            value={filterType}
-            onChange={(e) => {
-              setFilterType(e.target.value);
-              setFilterValue(""); // Clear value when type changes
-            }}
-            className="border border-[#0093b5] rounded px-4 py-2.5 text-[#0093b5] w-full"
-          >
-            <option value="all">Hammasi</option>
-            <option value="day">Kun</option>
-            <option value="week">Hafta (kun asosida)</option>
-            <option value="month">Oy</option>
-            <option value="year">Yil</option>
-          </select>
+            <Button
+              className=" bg-[#0093B5] hover:bg-[#007A99] text-white"
+              onClick={() => setCreateModal(true)}>
+              Yangi xodim
+            </Button>
+          </div>
+        </CardHeader>
+        <CardBody className="overflow-x-auto">
+          <form onSubmit={handleFilterSubmit} className="flex gap-4 items-center mb-4">
+            <Select label="Filter turi" value={filterType} onChange={(val) => { setFilterType(val); setFilterValue(""); }}>
+              <Option value="all">Hammasi</Option>
+              <Option value="day">Kun</Option>
+              <Option value="week">Hafta</Option>
+              <Option value="month">Oy</Option>
+              <Option value="year">Yil</Option>
+            </Select>
 
-          {/* Dynamic input */}
-          {(filterType === "day" || filterType === "week") && (
-            <input
-              type="date"
-              value={filterValue}
-              onChange={(e) => setFilterValue(e.target.value)}
-              className="border rounded px-4 py-2"
-              required
-            />
-          )}
-          {filterType === "month" && (
-            <input
-              type="month"
-              value={filterValue}
-              onChange={(e) => setFilterValue(e.target.value)}
-              className="border rounded px-4 py-2"
-              required
-            />
-          )}
-          {filterType === "year" && (
-            <select
-              value={filterValue}
-              onChange={(e) => setFilterValue(e.target.value)}
-              className="border border-[#0093b5] rounded px-4 py-2.5"
-              required
-            >
-              <option value="">Yilni tanlang</option>
-              {Array.from({ length: 5 }, (_, i) => {
-                const currentYear = new Date().getFullYear();
-                const year = currentYear - 2 + i;
-                return (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                );
-              })}
-            </select>
-          )}
+            {(filterType === "day" || filterType === "week") && (
+              <Input type="date" label="Sanani tanlang" value={filterValue} onChange={(e) => setFilterValue(e.target.value)} required />
+            )}
 
-          <button
-            type="submit"
-            className="bg-[#0093b5] text-white px-4 py-2 rounded hover:bg-[#007799]"
-          >
-            Qidirish
-          </button>
-        </form>
-      </div>
+            {filterType === "month" && (
+              <Input type="month" label="Oyni tanlang" value={filterValue} onChange={(e) => setFilterValue(e.target.value)} required />
+            )}
 
-      {employees.length > 0 ? (
-        <>
-          <div className="overflow-x-auto mt-5 p-6">
-            <table className="min-w-full bg-white border-collapse">
-              <thead className="bg-[#0093b5] text-white">
-                <tr className="border-b">
-                  <th className="py-2 px-4 text-left">Full Name</th>
-                  <th className="py-2 px-4 text-left">Phone Number</th>
-                  <th className="py-2 px-4 text-left">Role</th>
-                  <th className="py-2 px-4 text-left">Reyting</th>
-                  <th className="py-2 px-4 text-left">Sozlamalar</th>
-                  <th className="py-2 px-4 text-left">Izohlarni ko‘rish</th>
+            {filterType === "year" && (
+              <Select label="Yilni tanlang" value={filterValue} onChange={(val) => setFilterValue(val)} required>
+                <Option value="">Yilni tanlang</Option>
+                {Array.from({ length: 5 }, (_, i) => {
+                  const currentYear = new Date().getFullYear();
+                  const year = currentYear - 2 + i;
+                  return <Option key={year} value={year}>{year}</Option>;
+                })}
+              </Select>
+            )}
+
+            <Button type="submit"
+              className=" bg-[#0093B5] hover:bg-[#007A99] text-white"
+            >Qidirish</Button>
+          </form>
+
+          {employees.length > 0 ? (
+            <table className="min-w-full table-auto text-left">
+              <thead>
+                <tr className="bg-[#026634] text-white">
+                  <th className="p-3">F.I.O</th>
+                  <th className="p-3">Telefon</th>
+                  <th className="p-3">Role</th>
+                  <th className="p-3">Reyting</th>
+                  <th className="p-3">Sozlamalar</th>
+                  <th className="p-3">Izohlar</th>
                 </tr>
               </thead>
               <tbody>
-                {displayedEmployees.map((employee) => (
-                  <tr key={employee.id} className="border-b border-[#0093b5]">
-                    <td className="py-2 px-4">{employee.full_name}</td>
-                    <td className="py-2 px-4">{employee.phone_number}</td>
-                    <td className="py-2 px-4">{employee.role}</td>
-                    <td className="py-2 px-4">{employee.avgRating} ⭐</td>
-                    <td className="py-2 px-4">
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => {
-                            setEditData(employee);
-                            setEditModal(true);
-                          }}
-                          className="hover:text-[#5f5f5f]"
-                        >
-                          <MdEdit fontSize={22} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setDeleteId(employee.id);
-                            setDeleteModal(true);
-                          }}
-                          className="hover:text-red-600"
-                        >
-                          <MdDelete fontSize={22} />
-                        </button>
+                {displayedEmployees.map((emp) => (
+                  <tr key={emp.id} className="border-b hover:bg-gray-50">
+                    <td className="p-3">{emp.full_name}</td>
+                    <td className="p-3">{emp.phone_number}</td>
+                    <td className="p-3">{emp.role}</td>
+                    <td className="p-3">{emp.avgRating} ⭐</td>
+                    <td className="p-3">
+                      <div className="flex gap-2">
+                        <Button size="sm" color="blue" onClick={() => { setEditData(emp); setEditModal(true); }}><MdEdit /></Button>
+                        <Button size="sm" color="red" onClick={() => { setDeleteId(emp.id); setDeleteModal(true); }}><MdDelete /></Button>
                       </div>
                     </td>
-                    <td className="py-2 px-4">
-                      <button
-                        onClick={() =>
-                          navigate(`/admin/employee/${employee.id}`)
-                        }
-                        className="bg-[#0093b5] text-white px-3 py-1 rounded hover:bg-[#007799]"
-                      >
-                        Izohlarni ko‘rish
-                      </button>
+                    <td className="p-3">
+                      <Button size="sm" color="green" onClick={() => navigate(`/admin/employee/${emp.id}`)}>Ko‘rish</Button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          ) : (
+            <div className="text-center text-gray-600 p-8">Hech qanday ma'lumot topilmadi.</div>
+          )}
 
-          {/* Pagination */}
-          <div className="flex justify-center items-center space-x-4 mt-6">
-            <button
-              className={`py-2 px-4 rounded-md ${
-                currentPage === 1
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-[#4cd4f3] text-white hover:bg-[#0093b5]"
-              }`}
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
+          <div className="flex justify-center items-center gap-4 mt-6">
+            <Button disabled={currentPage === 1} onClick={() => handlePageChange(currentPage - 1)} variant="outlined">
               &lt;
-            </button>
-            <span className="text-lg">
-              {currentPage} / {totalPages}
-            </span>
-            <button
-              className={`py-2 px-4 rounded-md ${
-                currentPage === totalPages
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-[#4cd4f3] text-white hover:bg-[#0093b5]"
-              }`}
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
+            </Button>
+            <Typography color="gray">{currentPage} / {totalPages}</Typography>
+            <Button disabled={currentPage === totalPages} onClick={() => handlePageChange(currentPage + 1)} variant="outlined">
               &gt;
-            </button>
+            </Button>
           </div>
-        </>
-      ) : (
-        <div className="flex items-center justify-center h-screen">Bo‘sh</div>
-      )}
+        </CardBody>
+      </Card>
 
-      {/* Modal components */}
-      <EmployeeCreate
-        isOpen={createModal}
-        onClose={() => setCreateModal(false)}
-        refresh={fetchEmployees}
-      />
-      <EmployeeEdit
-        isOpen={editModal}
-        onClose={() => setEditModal(false)}
-        data={editData}
-        refresh={fetchEmployees}
-      />
-      <EmployeeDelete
-        isOpen={deleteModal}
-        onClose={() => setDeleteModal(false)}
-        id={deleteId}
-        refresh={fetchEmployees}
-      />
+      {/* Modals */}
+      <EmployeeCreate isOpen={createModal} onClose={() => setCreateModal(false)} refresh={fetchEmployees} />
+      <EmployeeEdit isOpen={editModal} onClose={() => setEditModal(false)} data={editData} refresh={fetchEmployees} />
+      <EmployeeDelete isOpen={deleteModal} onClose={() => setDeleteModal(false)} id={deleteId} refresh={fetchEmployees} />
     </div>
   );
 }

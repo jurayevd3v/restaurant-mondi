@@ -2,20 +2,30 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import {
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    DialogFooter,
+    Button,
+    Input,
+    Typography
+} from '@material-tailwind/react';
 
 const CategoryEdit = ({ isOpen, onClose, refresh, data }) => {
     const [name, setName] = useState('');
     const [number, setNumber] = useState('');
     const [photo, setPhoto] = useState('');
-    const [fileName, setFileName] = useState(''); // Для отображения имени файла
-    const navigate = useNavigate()
+    const [fileName, setFileName] = useState('');
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (data) {
             setName(data?.name || '');
             setNumber(Number(data?.sort) || '');
-            setPhoto(data?.image || '');  // Путь к изображению
-            setFileName(data?.image || '');  // Сбросим имя файла при изменении данных
+            setPhoto(data?.image || '');
+            setFileName(data?.image || '');
         }
     }, [data]);
 
@@ -23,24 +33,28 @@ const CategoryEdit = ({ isOpen, onClose, refresh, data }) => {
         const file = e.target.files[0];
         if (file) {
             setPhoto(file);
-            setFileName(file.name); // Обновляем имя файла
+            setFileName(file.name);
         }
     };
 
     const EditCategory = async () => {
+        setLoading(true);
         try {
             const formData = new FormData();
             formData.append('name', name);
             formData.append('sort', number);
             formData.append('image', photo);
+
             await axios.put(`/category/${data?.id}`, formData, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                     'Content-Type': 'multipart/form-data',
                 },
             });
+
             onClose();
             refresh();
+
             Swal.fire({
                 title: 'Muvaffaqiyatli!',
                 icon: 'success',
@@ -53,8 +67,8 @@ const CategoryEdit = ({ isOpen, onClose, refresh, data }) => {
             });
         } catch (error) {
             Swal.fire({
-                title: 'Error!',
-                text: error.response?.data?.message || 'Error',
+                title: 'Xatolik!',
+                text: error.response?.data?.message || 'Xatolik yuz berdi.',
                 icon: 'error',
                 position: 'top-end',
                 timer: 3000,
@@ -63,78 +77,105 @@ const CategoryEdit = ({ isOpen, onClose, refresh, data }) => {
                 toast: true,
                 showConfirmButton: false,
             });
+
             if (error.response && error.response.status === 401) {
                 localStorage.removeItem('token');
-                navigate('/login')
+                navigate('/login');
             }
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className={`modal2 ${isOpen ? 'open' : ''}`} onClick={onClose}>
-            <div onClick={(e) => e.stopPropagation()} className={`Modal2Content ${isOpen ? 'open' : ''} overflow-y-auto`}>
-                <div className="p-6 pb-12 bg-white rounded-lg mx-auto">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold text-black">Turkum o`zgartirish</h2>
-                        <button onClick={onClose} className="text-gray-600">
-                            <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14">
-                                <path fill="currentColor" d="M1.707.293A1 1 0 0 0 .293 1.707L5.586 7L.293 12.293a1 1 0 1 0 1.414 1.414L7 8.414l5.293 5.293a1 1 0 0 0 1.414-1.414L8.414 7l5.293-5.293A1 1 0 0 0 12.293.293L7 5.586z" />
-                            </svg>
-                        </button>
-                    </div>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter Name"
-                            />
-                        </div>
+        <Dialog open={isOpen} handler={onClose} size="sm" className="overflow-y-auto">
+            <DialogHeader className="flex justify-between items-center">
+                <Typography variant="h5" color="blue-gray">
+                    Turkum o‘zgartirish
+                </Typography>
+                <button onClick={onClose} className="text-gray-600 hover:text-black">
+                    <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14">
+                        <path fill="currentColor" d="M1.707.293A1 1 0 0 0 .293 1.707L5.586 7L.293 12.293a1 1 0 1 0 1.414 1.414L7 8.414l5.293 5.293a1 1 0 0 0 1.414-1.414L8.414 7l5.293-5.293A1 1 0 0 0 12.293.293L7 5.586z" />
+                    </svg>
+                </button>
+            </DialogHeader>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Number</label>
-                            <input
-                                type="number"
-                                value={number}
-                                onChange={(e) => setNumber(e.target.value)}
-                                className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter Number"
-                            />
-                        </div>
+            <DialogBody className="flex flex-col gap-4">
+                <Input
+                    label="Nom"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    color="gray"
+                    required
+                />
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Photo</label>
-                            <div className="relative">
-                                <input
-                                    type="file"
-                                    id="photo-input"
-                                    onChange={handlePhotoChange}
-                                    className="hidden" // Скрываем стандартное поле
-                                />
-                                <label
-                                    htmlFor="photo-input"
-                                    className="w-full p-3 mt-2 border border-[#0093b5] rounded-lg cursor-pointer bg-[#0093b5] text-white focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-between"
-                                >
-                                    {'Rasm: ' + fileName || 'Выберите файл'} {/* Отображаем имя файла или текст "Выберите файл" */}
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                <Input
+                    label="Tartib raqami"
+                    type="number"
+                    value={number}
+                    onChange={(e) => setNumber(e.target.value)}
+                    color="gray"
+                    required
+                />
 
-                    <div className="mt-6 flex justify-end space-x-4">
-                        <button
-                            onClick={EditCategory}
-                            className="px-6 py-2 bg-[#0093b5] duration-500 text-white rounded-lg hover:bg-[#0093b5] focus:outline-none"
-                        >
-                            O`zgartirish
-                        </button>
-                    </div>
+                <div>
+                    <Typography variant="small" color="gray" className="mb-1">
+                        Rasm yuklash
+                    </Typography>
+                    <input
+                        type="file"
+                        id="photo-input"
+                        onChange={handlePhotoChange}
+                        className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+                    />
+                    {fileName && (
+                        <Typography variant="small" className="mt-1 text-gray-500">
+                            Tanlangan fayl: <span className="font-medium">{fileName}</span>
+                        </Typography>
+                    )}
                 </div>
-            </div>
-        </div>
+            </DialogBody>
+
+            <DialogFooter className="flex justify-end space-x-3">
+                <Button variant="outlined" color="gray" onClick={onClose} disabled={loading}>
+                    Bekor qilish
+                </Button>
+                <Button
+                    variant="filled"
+                    color="green"
+                    onClick={EditCategory}
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <span className="flex items-center gap-2">
+                            <svg
+                                className="animate-spin h-4 w-4 text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                ></circle>
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v8H4z"
+                                ></path>
+                            </svg>
+                            Saqlanmoqda...
+                        </span>
+                    ) : (
+                        "O‘zgartirish"
+                    )}
+                </Button>
+            </DialogFooter>
+        </Dialog>
     );
 };
 
